@@ -12,7 +12,7 @@ Fork of `diablomedia/zendframework1-log-writer-mail`, published as `gizmocraft/z
 ### Other changes
 
 - Dev dependencies upgraded (PHPUnit 13, PHPStan 2.3, php-cs-fixer 3.95, GrumPHP 2.27). Dropped `composer-require-checker`, which has no release for PHP 8.6.
-- Dropped the dev dependency on the `view-helper-layout` package. The test layout script reads the `events` value through the `placeholder('Zend_Layout')` view helper instead of `layout()`.
+- Dev dependency on `gizmocraft/zendframework1-view-helper-layout` (`^2.0.0`) is kept, so the test layout script uses `$this->layout()->events` as upstream does.
 - Tests migrated to PHPUnit 13 attributes. The removed `getMockForAbstractClass()` and the deprecated `any()` mock expectations were replaced by small test doubles (a transport and a layout subclass).
 - CI runs PHP 8.5 and 8.6.
 - No library code changes and no public signature changes.
