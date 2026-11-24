@@ -20,6 +20,8 @@
  * @version    $Id$
  */
 
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * @category   Zend
@@ -27,23 +29,20 @@
  * @subpackage UnitTests
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @group      Zend_Log
  */
+#[Group('Zend_Log')]
 class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
 {
     /**
      * Mock Transport for Zend_Mail
      *
-     * @var Zend_Mail_Transport_Abstract
+     * @var Zend_Log_Writer_MailTest_Transport
      */
     protected $_transport;
 
     protected function setUp(): void
     {
-        $this->_transport = $this->getMockForAbstractClass(
-            'Zend_Mail_Transport_Abstract',
-            array()
-        );
+        $this->_transport = new Zend_Log_Writer_MailTest_Transport();
         Zend_Mail::setDefaultTransport($this->_transport);
     }
 
@@ -56,8 +55,8 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
      * Tests normal logging, but with multiple messages for a level.
      *
      * @return void
-     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testNormalLoggingMultiplePerLevel()
     {
         list(, , $log) = $this->_getSimpleLogger();
@@ -69,8 +68,8 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
      * Tests normal logging without use of Zend_Layout.
      *
      * @return void
-     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testNormalLoggingNoLayout()
     {
         list(, , $log) = $this->_getSimpleLogger();
@@ -82,8 +81,8 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
      * Tests normal logging with Zend_Layout usage.
      *
      * @return void
-     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testNormalLoggingWithLayout()
     {
         list(, , $log) = $this->_getSimpleLogger(true);
@@ -95,8 +94,8 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
      * Tests normal logging with Zend_Layout and a custom formatter for it.
      *
      * @return void
-     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testNormalLoggingWithLayoutAndItsFormatter()
     {
         list(, $writer, $log) = $this->_getSimpleLogger(true);
@@ -228,17 +227,17 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
 
         // Force the send() method to throw the same exception that would be
         // thrown if, say, the SMTP server couldn't be contacted.
-        $mail->expects($this->any())
-             ->method('send')
-             ->will($this->throwException(new Zend_Mail_Transport_Exception()));
+        $this->_transport->exception = new Zend_Mail_Transport_Exception();
 
         // Log an error message so that there's something to send via email.
         $log->err('a bogus error message to force mail sending');
 
         $this->expectException(\Exception::class);
-        unset($log);
-
-        restore_error_handler();
+        try {
+            unset($log);
+        } finally {
+            restore_error_handler();
+        }
     }
 
     /**
@@ -258,22 +257,20 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
 
         // Force the render() method to throw the same exception that would
         // be thrown if, say, the layout template file couldn't be found.
-        $layout->expects($this->any())
-               ->method('render')
-               ->will($this->throwException(new Zend_View_Exception('bogus message')));
+        $layout->exception = new Zend_View_Exception('bogus message');
 
         // Log an error message so that there's something to send via email.
         $log->err('a bogus error message to force mail sending');
 
         $this->expectException(\Exception::class);
-        unset($log);
-
-        restore_error_handler();
+        try {
+            unset($log);
+        } finally {
+            restore_error_handler();
+        }
     }
 
-    /**
-     * @group ZF-8953
-     */
+    #[Group('ZF-8953')]
     public function testFluentInterface()
     {
         list(, $writer) = $this->_getSimpleLogger(true);
@@ -283,9 +280,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Zend_Log_Writer_Mail::class, $instance);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactory()
     {
         $config = array(
@@ -309,9 +304,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('Subject: [error] exceptions on my application', $this->_transport->header);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryShouldSetSubjectPrependText()
     {
         $config = array(
@@ -325,14 +318,9 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('Subject: [error] exceptions on my application (INFO=1)', $this->_transport->header);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryShouldAcceptCustomMailClass()
     {
-        $this->getMockBuilder('Zend_Mail')
-            ->setMockClassName('Zend_Stub_Mail_Custom')
-            ->getMock();
         $config = array(
             'class' => 'Zend_Stub_Mail_Custom'
         );
@@ -341,9 +329,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Zend_Log_Writer_Mail::class, $writer);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryShouldSetCharsetForMail()
     {
         $config = array(
@@ -357,9 +343,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('Content-Type: text/plain; charset=UTF-8', $this->_transport->header);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryShouldAllowToSetMultipleRecipientsInArray()
     {
         $config = array(
@@ -387,9 +371,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('project <projectname@domain.com>', $this->_transport->header);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryWithLayout()
     {
         $config = array(
@@ -411,9 +393,7 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(2, substr_count($this->_transport->body, 'an info message'));
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryShouldSetLayoutFormatter()
     {
         $config = array(
@@ -427,14 +407,9 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
         $this->assertTrue($writer->getLayoutFormatter() instanceof Zend_Log_Formatter_Simple);
     }
 
-    /**
-     * @group ZF-9990
-     */
+    #[Group('ZF-9990')]
     public function testFactoryWithCustomLayoutClass()
     {
-        $this->getMockBuilder('Zend_Layout')
-            ->setMockClassName('Zend_Stub_Layout_Custom')
-            ->getMock();
         $config = array(
             'layout' => 'Zend_Stub_Layout_Custom'
         );
@@ -455,25 +430,17 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
      */
     protected function _getSimpleLogger($useLayout = false)
     {
-        // Get a mock object for Zend_Mail so that no emails are actually
-        // sent.
-        $mail = $this->getMockBuilder('Zend_Mail')
-            ->onlyMethods(array('send'))
-            ->getMock();
-
-        // The send() method can be called any number of times.
-        $mail->expects($this->any())
-             ->method('send');
+        // Zend_Mail sends through the default transport set in setUp(), so no
+        // emails are actually sent.
+        $mail = new Zend_Mail();
 
         $mail->addTo('zend_log_writer_mail_test@example.org');
         $mail->setFrom('zend_log_writer_mail_test@example.org');
 
-        // Setup a mock object for Zend_Layout because we can't rely on any
-        // layout files being in place.
+        // Use a Zend_Layout whose render() is replaced because we can't rely
+        // on any layout files being in place.
         if ($useLayout) {
-            $layout = $this->getMockBuilder('Zend_Layout')
-                ->onlyMethods(array('render'))
-                ->getMock();
+            $layout = new Zend_Log_Writer_MailTest_Layout();
             $writer = new Zend_Log_Writer_Mail($mail, $layout);
         } else {
             $writer = new Zend_Log_Writer_Mail($mail);
@@ -500,4 +467,51 @@ class Zend_Log_Writer_MailTest extends PHPUnit\Framework\TestCase
             'priorityName' => 'INFO'
         );
     }
+}
+
+/**
+ * Transport that records the message and optionally fails, replacing the
+ * abstract-class mock used before PHPUnit 12.
+ */
+class Zend_Log_Writer_MailTest_Transport extends Zend_Mail_Transport_Abstract
+{
+    /**
+     * @var Throwable|null
+     */
+    public $exception;
+
+    protected function _sendMail()
+    {
+        if ($this->exception !== null) {
+            throw $this->exception;
+        }
+    }
+}
+
+/**
+ * Layout whose render() does not need a layout script.
+ */
+class Zend_Log_Writer_MailTest_Layout extends Zend_Layout
+{
+    /**
+     * @var Throwable|null
+     */
+    public $exception;
+
+    public function render($name = null)
+    {
+        if ($this->exception !== null) {
+            throw $this->exception;
+        }
+
+        return '';
+    }
+}
+
+class Zend_Stub_Mail_Custom extends Zend_Mail
+{
+}
+
+class Zend_Stub_Layout_Custom extends Zend_Layout
+{
 }
