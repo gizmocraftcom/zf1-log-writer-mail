@@ -1,7 +1,6 @@
 # Zend Framework 1 - Log_Writer_Mail
 
 [![Build](https://github.com/gizmocraftcom/zf1-log-writer-mail/workflows/Build/badge.svg?event=push)](https://github.com/gizmocraftcom/zf1-log-writer-mail/actions?query=workflow%3ABuild+event%3Apush)
-[![codecov](https://codecov.io/gh/gizmocraftcom/zf1-log-writer-mail/branch/master/graph/badge.svg)](https://codecov.io/gh/gizmocraftcom/zf1-log-writer-mail)
 [![Latest Stable Version](https://poser.pugx.org/gizmocraft/zendframework1-log-writer-mail/v/stable)](https://packagist.org/packages/gizmocraft/zendframework1-log-writer-mail)
 [![Total Downloads](https://poser.pugx.org/gizmocraft/zendframework1-log-writer-mail/downloads)](https://packagist.org/packages/gizmocraft/zendframework1-log-writer-mail)
 [![License](https://poser.pugx.org/gizmocraft/zendframework1-log-writer-mail/license)](https://packagist.org/packages/gizmocraft/zendframework1-log-writer-mail)
